@@ -1,46 +1,43 @@
 'use strict'
-
 /*
 ||==================================================================================
 || DESCRIPTION OF IMPLEMENTATION PRINCIPLES
-|| A. Position for rules (internal representation): string with length 56.
+|| A. Position for rules (internal representation): string with length 37.
 ||    Special numbering for easy applying rules.
 ||    Valid characters: b B w W 0 -
 ||       b (black) B (black king) w (white) W (white king) 0 (empty) (- unused)
 ||    Examples:
-||      '-bbbBBB000w-wwWWWwwwww-bbbbbbbbbb-000wwwwwww-00bbbwwWW0-'
-||      '-0000000000-0000000000-0000000000-0000000000-0000000000-'  (empty position)
-||      '-bbbbbbbbbb-bbbbbbbbbb-0000000000-wwwwwwwwww-wwwwwwwwww-'  (start position)
-|| B. Position (external respresentation): string with length 51.
+||      '-bbbBBB0w-wwWW00ww-000wwwww-00bwwWW0-'  (random position)
+||      '-00000000-00000000-00000000-00000000-'  (empty position)
+||      '-bbbbbbbb-bbbb0000-0000wwww-wwwwwwww-'  (start position)
+|| B. Position (external respresentation): string with length 33.
 ||    Square numbers are represented by the position of the characters.
 ||    Position 0 is reserved for the side to move (B or W)
 ||    Valid characters: b B w W 0
 ||       b (black) B (black king) w (white) W (white king) 0 (empty)
 ||    Examples:
-||       'B00000000000000000000000000000000000000000000000000'  (empty position)
-||       'Wbbbbbbbbbbbbbbbbbbbb0000000000wwwwwwwwwwwwwwwwwwww'  (start position)
-||       'WbbbbbbBbbbbb00bbbbb000000w0W00ww00wwwwww0wwwwwwwww'  (random position)
+||       'B00000000000000000000000000000000'  (empty position)
+||       'Wbbbbbbbbbbbb00000000wwwwwwwwwwww'  (start position)
+||       'WbbBbbbbb00b000000w0W00ww00ww0www'  (random position)
 ||
-|| External numbering      Internal Numbering
-|| --------------------    --------------------
-||   01  02  03  04  05      01  02  03  04  05
-|| 06  07  08  09  10      06  07  08  09  10
-||   11  12  13  14  15      12  13  14  15  16
-|| 16  17  18  19  20      17  18  19  20  21
-||   21  22  23  24  25      23  24  25  26  27
-|| 26  27  28  29  30      28  29  30  31  32
-||   31  32  33  34  35      34  35  36  37  38
-|| 36  37  38  39  40      39  40  41  42  43
-||   41  42  43  44  45      45  46  47  48  49
-|| 46  47  48  49  50      50  51  52  53  54
-|| --------------------    --------------------
+|| Internal numbering       External Numbering
+|| --------------------     --------------------
+||     01  02  03  04           01  02  03  04
+||   05  06  07  08           05  06  07  08
+||     10  11  12  13           09  10  11  12
+||   14  15  16  17           13  14  15  16
+||     19  20  21  22           17  18  19  20
+||   23  24  25  26           21  22  23  24
+||     28  29  30  31           25  26  27  28
+||   32  33  34  35           29  30  31  32
+|| --------------------     --------------------
 ||
 || Internal numbering has fixed direction increments for easy applying rules:
-||   NW   NE         -5   -6
+||   NW   NE         -5   -4
 ||     \ /             \ /
 ||     sQr     >>      sQr
 ||     / \             / \
-||   SW   SE         +5   +6
+||   SW   SE         +4   +5
 ||
 || DIRECTION-STRINGS
 || Strings of variable length for each of four directions at one square.
@@ -52,26 +49,26 @@
 ||   SW: 34, 39                     b0
 ||   NW: 23, 17                     bw
 || CONVERSION internal to external representation of numbers.
-||   N: external number, values 1..50
-||   M: internal number, values 0..55 (invalid 0,11,22,33,44,55)
+||   N: external number, values 1..32
+||   M: internal number, values 0..36 (invalid 0,9,18,27,36)
 ||   Formulas:
-||   M = N + floor((N-1)/10)
-||   N = M - floor((M-1)/11)
+||   M = N + floor((N-1)/8)
+||   N = M - floor((M-1)/9)
 ||
 ||==================================================================================
 */
-var Draughts = function (fen) {
+var Checkers = function (fen) {
   var BLACK = 'B'
   var WHITE = 'W'
   // var EMPTY = -1
   var MAN = 'b'
   var KING = 'w'
   var SYMBOLS = 'bwBW'
-  var DEFAULT_FEN = 'W:W31-50:B1-20'
+  var DEFAULT_FEN = 'W:W21-32:B1-12'
   var position
-  var DEFAULT_POSITION_INTERNAL = '-bbbbbbbbbb-bbbbbbbbbb-0000000000-wwwwwwwwww-wwwwwwwwww-'
-  var DEFAULT_POSITION_EXTERNAL = 'Wbbbbbbbbbbbbbbbbbbbb0000000000wwwwwwwwwwwwwwwwwwww'
-  var STEPS = {NE: -5, SE: 6, SW: 5, NW: -6}
+  var DEFAULT_POSITION_INTERNAL = '-bbbbbbbb-bbbb0000-0000wwww-wwwwwwww-'
+  var DEFAULT_POSITION_EXTERNAL = 'Wbbbbbbbbbbbb00000000wwwwwwwwwwww'
+  var STEPS = {NE: -4, SE: 5, SW: 4, NW: -5}
   var POSSIBLE_RESULTS = ['2-0', '0-2', '1-1', '0-0', '*', '1-0', '0-1']
   var FLAGS = {
     NORMAL: 'n',
@@ -157,11 +154,9 @@ var Draughts = function (fen) {
     var externalPosition = DEFAULT_POSITION_EXTERNAL
     for (var i = 1; i <= externalPosition.length; i++) {
       // console.log(externalPosition[i])
-      // externalPosition = setCharAt(externalPosition, i, 0)
-      externalPosition = externalPosition.setCharAt(i, '0')
+      externalPosition = setCharAt(externalPosition, i, 0)
     }
-    // externalPosition = setCharAt(externalPosition, 0, turn)
-    externalPosition = externalPosition.setCharAt(0, turn)
+    externalPosition = setCharAt(externalPosition, 0, turn)
     // console.log(position, turn)
     // TODO refactor
     for (var k = 1; k <= 2; k++) {
@@ -182,15 +177,13 @@ var Draughts = function (fen) {
           var to = parseInt(range[1], 10)
           for (var j = from; j <= to; j++) {
             // console.log(externalPosition[j], 'looop')
-            // externalPosition = setCharAt(externalPosition, j, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
-            externalPosition = externalPosition.setCharAt(j, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
+            externalPosition = setCharAt(externalPosition, j, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
           // put({type: color.toLowerCase(), color: color})
           }
         } else {
           numSquare = parseInt(numSquare, 10)
           // console.log(externalPosition, numSquare, 'else', color)
-          // externalPosition = setCharAt(externalPosition, numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
-          externalPosition = externalPosition.setCharAt(numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
+          externalPosition = setCharAt(externalPosition, numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
         // put({type: color.toLowerCase(), color: color})
         }
       }
@@ -613,10 +606,8 @@ var Draughts = function (fen) {
     // console.log(us, them, 'mke in mive', move, position.charAt(convertNumber(move.to, 'internal')))
     // console.log(move,position)
     move.piece = position.charAt(convertNumber(move.from, 'internal'))
-    // position = setCharAt(position, convertNumber(move.to, 'internal'), position.charAt(convertNumber(move.from, 'internal')))
-    // position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
-    position = position.setCharAt(convertNumber(move.to, 'internal'), position.charAt(convertNumber(move.from, 'internal')))
-    position = position.setCharAt(convertNumber(move.from, 'internal'), 0)
+    position = setCharAt(position, convertNumber(move.to, 'internal'), position.charAt(convertNumber(move.from, 'internal')))
+    position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
     move.flags = FLAGS.NORMAL
     // console.log(position, 'makeMove no capture')
     // TODO refactor to either takes or capture
@@ -625,8 +616,7 @@ var Draughts = function (fen) {
       move.captures = move.takes
       move.piecesCaptured = move.piecesTaken
       for (var i = 0; i < move.takes.length; i++) {
-        // position = setCharAt(position, convertNumber(move.takes[i], 'internal'), 0)
-        position = position.setCharAt(convertNumber(move.takes[i], 'internal'), 0)
+        position = setCharAt(position, convertNumber(move.takes[i], 'internal'), 0)
       // console.log('setting captures bit at', convertNumber(move.captures[i], 'external'))
       }
     }
@@ -635,11 +625,9 @@ var Draughts = function (fen) {
     if (move.to <= 5 && move.piece === 'w') {
       move.flags = FLAGS.PROMOTION
       // console.log('piece promoted')
-      // position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
-      position = position.setCharAt(convertNumber(move.to, 'internal'), move.piece.toUpperCase())
-    } else if (move.to >= 46 && move.piece === 'b') {
-      // position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
-      position = position.setCharAt(convertNumber(move.to, 'internal'), move.piece.toUpperCase())
+      position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
+    } else if (move.to >= 29 && move.piece === 'b') {
+      position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
     }
     push(move)
     if (turn === BLACK) {
@@ -663,8 +651,7 @@ var Draughts = function (fen) {
     if (outsideBoard(convertNumber(square, 'internal')) === true) {
       return false
     }
-    // position = setCharAt(position, convertNumber(square, 'internal'), piece)
-    position = position.setCharAt(convertNumber(square, 'internal'), piece)
+    position = setCharAt(position, convertNumber(square, 'internal'), piece)
     update_setup(generate_fen())
 
     return true
@@ -672,8 +659,7 @@ var Draughts = function (fen) {
 
   function remove (square) {
     var piece = get(square)
-    // position = setCharAt(position, convertNumber(square, 'internal'), 0)
-    position = position.setCharAt(convertNumber(square, 'internal'), 0)
+    position = setCharAt(position, convertNumber(square, 'internal'), 0)
     update_setup(generate_fen())
 
     return piece
@@ -886,10 +872,8 @@ var Draughts = function (fen) {
             var updateState = clone(state)
             updateState.dirFrom = oppositeDir(dir)
             var pieceCode = updateState.position.charAt(posFrom)
-            // updateState.position = setCharAt(updateState.position, posFrom, 0)
-            // updateState.position = setCharAt(updateState.position, posTo, pieceCode)
-            updateState.position = updateState.position.setCharAt(posFrom, '0')
-            updateState.position = updateState.position.setCharAt(posTo, pieceCode)
+            updateState.position = setCharAt(updateState.position, posFrom, 0)
+            updateState.position = setCharAt(updateState.position, posTo, pieceCode)
             finished = false
             captureArrayForDir[dir] = capturesAtSquare(posTo, updateState, updateCapture)
           }
@@ -917,10 +901,8 @@ var Draughts = function (fen) {
               updateState = clone(state)
               updateState.dirFrom = oppositeDir(dir)
               pieceCode = updateState.position.charAt(posFrom)
-              // updateState.position = setCharAt(updateState.position, posFrom, 0)
-              // updateState.position = setCharAt(updateState.position, posTo, pieceCode)
-              updateState.position = updateState.position.setCharAt(posFrom, '0')
-              updateState.position = updateState.position.setCharAt(posTo, pieceCode)
+              updateState.position = setCharAt(updateState.position, posFrom, 0)
+              updateState.position = setCharAt(updateState.position, posTo, pieceCode)
               finished = false
               var dirIndex = dir + i.toString()
               captureArrayForDir[dirIndex] = capturesAtSquare(posTo, updateState, updateCapture)
@@ -970,18 +952,14 @@ var Draughts = function (fen) {
     // var us = turn
     // var them = swap_color(turn)
     console.log(position, 'before', move)
-    // position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece)
-    // position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
-    position = position.setCharAt(convertNumber(move.from, 'internal'), move.piece)
-    position = position.setCharAt(convertNumber(move.to, 'internal'), 0)
+    position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece)
+    position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
     if (move.flags === 'c') {
       for (var i = 0; i < move.captures.length; i += 1) {
-        // position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i])
-        position = position.setCharAt(convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i])
+        position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i])
       }
     } else if (move.flags === 'p') {
-      // position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase())
-      position = position.setCharAt(convertNumber(move.from, 'internal'), move.piece.toLowerCase())
+      position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase())
     }
     // console.log(position, 'after')
     return move
@@ -1061,10 +1039,10 @@ var Draughts = function (fen) {
     var result
     switch (notation) {
       case 'internal':
-        result = num + Math.floor((num - 1) / 10)
+        result = num + Math.floor((num - 1) / 8)
         break
       case 'external':
-        result = num - Math.floor((num - 1) / 11)
+        result = num - Math.floor((num - 1) / 9)
         break
       default:
         result = num
@@ -1076,19 +1054,17 @@ var Draughts = function (fen) {
     var sub1, sub2, sub3, sub4, sub5, newPosition
     switch (notation) {
       case 'internal':
-        sub1 = position.substr(1, 10)
-        sub2 = position.substr(11, 10)
-        sub3 = position.substr(21, 10)
-        sub4 = position.substr(31, 10)
-        sub5 = position.substr(41, 10)
+        sub1 = position.substr(1, 8)
+        sub2 = position.substr(9, 8)
+        sub3 = position.substr(17, 8)
+        sub4 = position.substr(25, 8)
         newPosition = '-' + sub1 + '-' + sub2 + '-' + sub3 + '-' + sub4 + '-' + sub5 + '-'
         break
       case 'external':
-        sub1 = position.substr(1, 10)
-        sub2 = position.substr(12, 10)
-        sub3 = position.substr(23, 10)
-        sub4 = position.substr(34, 10)
-        sub5 = position.substr(45, 10)
+        sub1 = position.substr(1, 8)
+        sub2 = position.substr(10, 8)
+        sub3 = position.substr(19, 8)
+        sub4 = position.substr(28, 8)
         newPosition = '?' + sub1 + sub2 + sub3 + sub4 + sub5
         break
       default:
@@ -1100,7 +1076,7 @@ var Draughts = function (fen) {
   function outsideBoard (square) {
     // internal notation only
     var n = parseInt(square, 10)
-    if (n >= 0 && n <= 55 && (n % 11) !== 0) {
+    if (n >= 0 && n <= 35 && (n % 9) !== 0) {
       // console.log('inside', n)
       return false
     } else {
@@ -1159,12 +1135,12 @@ var Draughts = function (fen) {
     var extPosition = convertPosition(position, 'external')
     var s = '\n+-------------------------------+\n'
     var i = 1
-    for (var row = 1; row <= 10; row++) {
+    for (var row = 1; row <= 8; row++) {
       s += '|\t'
       if (row % 2 !== 0) {
         s += '  '
       }
-      for (var col = 1; col <= 10; col++) {
+      for (var col = 1; col <= 8; col++) {
         if (col % 2 === 0) {
           s += '  '
           i++
@@ -1270,7 +1246,6 @@ var Draughts = function (fen) {
     MAN: MAN,
     KING: KING,
     FLAGS: FLAGS,
-    SQUARES: 'A8',
 
     load: function (fen) {
       return load(fen)
@@ -1386,20 +1361,11 @@ var Draughts = function (fen) {
 }
 
 if (typeof exports !== 'undefined') {
-  exports.Draughts = Draughts
+  exports.Checkers = Checkers
 }
 
 if (typeof define !== 'undefined') {
   define(function () {
-    return Draughts
+    return Checkers
   })
-}
-
-String.prototype.setCharAt = function (idx, chr) {
-  idx = parseInt(idx, 10)
-  if (idx > this.length - 1) {
-    return this.toString()
-  } else {
-    return this.substr(0, idx) + chr + this.substr(idx + 1)
-  }
 }
