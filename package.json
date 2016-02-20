@@ -1,0 +1,23 @@
+{
+  "name": "checkers",
+  "version": "0.0.1",
+  "description": "A Javascript Checkers Move validation library",
+  "main": "checkers.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shubhendusaurabh/checkers.js.git"
+  },
+  "keywords": [
+    "checkers",
+    "draughts"
+  ],
+  "author": "shubhendu",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/shubhendusaurabh/checkers.js/issues"
+  },
+  "homepage": "https://github.com/shubhendusaurabh/checkers.js#readme"
+}
