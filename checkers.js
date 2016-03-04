@@ -604,12 +604,13 @@ var Checkers = function (fen) {
     // var them = swap_color(us)
     // console.log(turn, us, them)
     // console.log(us, them, 'mke in mive', move, position.charAt(convertNumber(move.to, 'internal')))
-    // console.log(move,position)
+    console.log(move,position)
     move.piece = position.charAt(convertNumber(move.from, 'internal'))
-    position = setCharAt(position, convertNumber(move.to, 'internal'), position.charAt(convertNumber(move.from, 'internal')))
-    position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
+    position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece)
+    position = setCharAt(position, convertNumber(move.from, 'internal'), 0)
     move.flags = FLAGS.NORMAL
-    // console.log(position, 'makeMove no capture')
+    console.log(position, 'makeMove no capture')
+    console.log(convertNumber(move.to, 'internal'),position.charAt(convertNumber(move.from, 'internal')));
     // TODO refactor to either takes or capture
     if (move.takes && move.takes.length) {
       move.flags = FLAGS.CAPTURE
@@ -787,17 +788,17 @@ var Checkers = function (fen) {
         break
       case 'W':
       case 'B':
-        dirStrings = directionStrings(position, posFrom)
+        dirStrings = directionStrings(position, posFrom, 2)
         for (dir in dirStrings) {
           str = dirStrings[dir]
 
-          matchArray = str.match(/^[BW]0+/) // e.g. B000, W0
+          matchArray = str.match(/^[BW]0/) // e.g. B000, W0
           if (matchArray !== null) {
-            for (var i = 0; i < matchArray[0].length; i++) {
-              posTo = posFrom + (i * STEPS[dir])
+            // for (var i = 0; i < matchArray[0].length; i++) {
+              posTo = posFrom + (STEPS[dir])
               moveObject = {from: posFrom, to: posTo, takes: [], jumps: []}
               moves.push(moveObject)
-            }
+            // }
           }
         }
         break
@@ -842,7 +843,7 @@ var Checkers = function (fen) {
     if (piece === 'b' || piece === 'w') {
       dirString = directionStrings(state.position, posFrom, 3)
     } else {
-      dirString = directionStrings(state.position, posFrom)
+      dirString = directionStrings(state.position, posFrom, 3)
     }
     // console.log(piece, dirString, convertNumber(posFrom, 'external'))
     var finished = true
@@ -856,7 +857,7 @@ var Checkers = function (fen) {
         case 'b':
         case 'w':
           var matchArray = str.match(/^b[wW]0|^w[bB]0/) // matches: bw0, bW0, wB0, wb0
-          if (matchArray !== null) {
+          if (matchArray !== null && validDir(piece, dir) === true) {
             var posTo = posFrom + (2 * STEPS[dir])
             var posTake = posFrom + (1 * STEPS[dir])
             if (capture.takes.indexOf(posTake) > -1) {
@@ -880,7 +881,7 @@ var Checkers = function (fen) {
           break
         case 'B':
         case 'W':
-          matchArray = str.match(/^B0*[wW]0+|^W0*[bB]0+/) // matches: B00w000, WB00
+          matchArray = str.match(/^B0*[wW]0|^W0*[bB]0/) // matches: B00w000, WB00
           if (matchArray !== null) {
             var matchStr = matchArray[0]
             var matchArraySubstr = matchStr.match(/[wW]0+$|[bB]0+$/) // matches: w000, B00
@@ -1058,14 +1059,14 @@ var Checkers = function (fen) {
         sub2 = position.substr(9, 8)
         sub3 = position.substr(17, 8)
         sub4 = position.substr(25, 8)
-        newPosition = '-' + sub1 + '-' + sub2 + '-' + sub3 + '-' + sub4 + '-' + sub5 + '-'
+        newPosition = '-' + sub1 + '-' + sub2 + '-' + sub3 + '-' + sub4 + '-'
         break
       case 'external':
         sub1 = position.substr(1, 8)
         sub2 = position.substr(10, 8)
         sub3 = position.substr(19, 8)
         sub4 = position.substr(28, 8)
-        newPosition = '?' + sub1 + sub2 + sub3 + sub4 + sub5
+        newPosition = '?' + sub1 + sub2 + sub3 + sub4
         break
       default:
         newPosition = position
@@ -1133,7 +1134,7 @@ var Checkers = function (fen) {
 
   function ascii (unicode) {
     var extPosition = convertPosition(position, 'external')
-    var s = '\n+-------------------------------+\n'
+    var s = '\n+---------------------------+\n'
     var i = 1
     for (var row = 1; row <= 8; row++) {
       s += '|\t'
@@ -1157,7 +1158,7 @@ var Checkers = function (fen) {
       }
       s += '\t|\n'
     }
-    s += '+-------------------------------+\n'
+    s += '+---------------------------+\n'
     return s
   }
 
@@ -1291,7 +1292,7 @@ var Checkers = function (fen) {
       move.from = parseInt(move.from, 10)
       // var moves = getLegalMoves(move.from)
       var moves = generate_moves()
-      // console.log(moves);
+      console.log(moves);
       for (var i = 0; i < moves.length; i++) {
         // if (move.to === convertNumber(moves[i].to, 'external')) {
         if ((move.to === moves[i].to) && (move.from === moves[i].from)) {
