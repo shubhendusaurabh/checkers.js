@@ -95,7 +95,6 @@ var Checkers = function (fen) {
   }
 
   var turn = WHITE
-  // var half_moves = 0
   var moveNumber = 1
   var history = []
   var header = {}
@@ -111,7 +110,6 @@ var Checkers = function (fen) {
   function clear () {
     position = DEFAULT_POSITION_INTERNAL
     turn = WHITE
-    // half_moves = 0
     moveNumber = 1
     history = []
     header = {}
@@ -124,7 +122,6 @@ var Checkers = function (fen) {
 
   function load (fen) {
     // TODO for default fen
-    // var dimension = 10
     if (!fen || fen === DEFAULT_FEN) {
       position = DEFAULT_POSITION_INTERNAL
       update_setup(generate_fen(position))
@@ -132,7 +129,6 @@ var Checkers = function (fen) {
     }
     // fen_constants(dimension) //TODO for empty fens
 
-    // var squareCount = parseInt(dimension * dimension / 2)
     var checkedFen = validate_fen(fen)
     if (!checkedFen.valid) {
       console.error('Fen Error', fen, checkedFen)
@@ -150,23 +146,18 @@ var Checkers = function (fen) {
     // which side to move
     turn = tokens[0].substr(0, 1)
 
-    // var positions = new Array()
     var externalPosition = DEFAULT_POSITION_EXTERNAL
     for (var i = 1; i <= externalPosition.length; i++) {
-      // console.log(externalPosition[i])
       externalPosition = setCharAt(externalPosition, i, 0)
     }
     externalPosition = setCharAt(externalPosition, 0, turn)
-    // console.log(position, turn)
     // TODO refactor
     for (var k = 1; k <= 2; k++) {
-      // TODO called twide
-      // console.log(tokens)
+      // TODO called twice
       var color = tokens[k].substr(0, 1)
       var sideString = tokens[k].substr(1)
       if (sideString.length === 0) continue
       var numbers = sideString.split(',')
-      // console.log(color, sideString, numbers)
       for (i = 0; i < numbers.length; i++) {
         var numSquare = numbers[i]
         var isKing = (numSquare.substr(0, 1) === 'K')
@@ -176,20 +167,15 @@ var Checkers = function (fen) {
           var from = parseInt(range[0], 10)
           var to = parseInt(range[1], 10)
           for (var j = from; j <= to; j++) {
-            // console.log(externalPosition[j], 'looop')
             externalPosition = setCharAt(externalPosition, j, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
-          // put({type: color.toLowerCase(), color: color})
           }
         } else {
           numSquare = parseInt(numSquare, 10)
-          // console.log(externalPosition, numSquare, 'else', color)
           externalPosition = setCharAt(externalPosition, numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
-        // put({type: color.toLowerCase(), color: color})
         }
       }
     }
 
-    // console.log(position, externalPosition)
     position = convertPosition(externalPosition, 'internal')
     update_setup(generate_fen(position))
 
@@ -197,7 +183,6 @@ var Checkers = function (fen) {
   }
 
   function validate_fen (fen) {
-    // var fenPattern = /^(W|B):(W|B)((?:K?\d*)(?:,K?\d+)*?)(?::(W|B)((?:K?\d*)(?:,K?\d+)*?))?$/
     var errors = [
       {
         code: 0,
@@ -254,7 +239,6 @@ var Checkers = function (fen) {
     }
 
     if (fen.substr(1, 1) !== ':') {
-      // console.log(fen.trim(), fen.substr(1, 1));
       return {valid: false, error: errors[1], fen: fen}
     }
 
@@ -290,7 +274,6 @@ var Checkers = function (fen) {
         var range = numSquare.split('-')
         if (range.length === 2) {
           if (isInteger(range[0]) === false) {
-            console.log(isInteger(range[0]))
             return {valid: false, error: errors[5], fen: fen, range: range[0]}
           }
           if (!(range[0] >= 1 && range[0] <= 100)) {
@@ -320,7 +303,6 @@ var Checkers = function (fen) {
     var black = []
     var white = []
     var externalPosition = convertPosition(position, 'external')
-    // console.log(externalPosition, position);
     for (var i = 0; i < externalPosition.length; i++) {
       switch (externalPosition[i]) {
         case 'w':
@@ -368,7 +350,6 @@ var Checkers = function (fen) {
 
     while (tempHistory.length > 0) {
       var move = tempHistory.shift()
-      // console.log(move)
       if (move.turn === 'W') {
         moveString += moveNumber + '. '
       }
@@ -468,7 +449,6 @@ var Checkers = function (fen) {
         if (trim(key).length > 0) {
           headerObj[key] = value
         }
-      // console.log(key, value)
       }
 
       return headerObj
@@ -489,14 +469,9 @@ var Checkers = function (fen) {
 
     if (headers['Setup'] === '1') {
       if (!(('FEN' in headers) && load(headers['FEN']))) {
-        console.log('fen invalide')
         return false
-      } else {
-        console.log(ascii())
-        console.log('fen valid')
       }
     } else {
-      // console.log('setup not present')
       position = DEFAULT_POSITION_INTERNAL
     }
 
@@ -526,28 +501,19 @@ var Checkers = function (fen) {
     moves = moves.join(',').replace(/,,+/g, ',').split(',')
 
     var move = ''
-    // console.log(moves.pop())
-    // console.log(position)
     for (var half_move = 0; half_move < moves.length - 1; half_move += 1) {
-      // console.log(moves.length-1, half_move)
       move = getMoveObject(moves[half_move])
-      // console.log(move);
       if (!move) {
         return false
       } else {
         makeMove(move)
-      // console.log(move)
-      // console.log('move made\n and board is\n')
-      // console.log(ascii())
       }
     }
 
     var result = moves[moves.length - 1]
     if (POSSIBLE_RESULTS.indexOf(result) > -1) {
-      // console.log(headers)
       if (headers['Result'] === 'undefined') {
         set_header(['Result', result])
-      // console.log(headers)
       }
     } else {
       move = getMoveObject(result)
@@ -557,12 +523,10 @@ var Checkers = function (fen) {
         makeMove(move)
       }
     }
-    // console.log(moves)
     return true
   }
 
   function getMoveObject (move) {
-    // console.log('getting object for', move)
     // TODO move flags for both capture and promote??
     var tempMove = {}
     var matches = move.split(/[x|-]/)
@@ -574,16 +538,11 @@ var Checkers = function (fen) {
     } else {
       tempMove.flags = FLAGS.CAPTURE
     }
-    // console.log(move.from, convertNumber(move.from, 'internal'), position, position.charAt(convertNumber(move.from, 'external')))
     tempMove.piece = position.charAt(convertNumber(tempMove.from, 'internal'))
-    // console.log('calling legal moves')
     var moves = getLegalMoves(tempMove.from)
     moves = convertMoves(moves, 'external')
-    // console.log(moves, 'from legal moves', tempMove)
     // if move legal then make move
     for (var i = 0; i < moves.length; i += 1) {
-      // console.log(moves[i])
-      // console.log('is valid ?', typeof tempMove.from, typeof moves[i].from, tempMove.to, moves[i].to)
       if (tempMove.to === moves[i].to && tempMove.from === moves[i].from) {
         if (moves[i].takes.length > 0) {
           tempMove.flags = FLAGS.CAPTURE
@@ -591,26 +550,18 @@ var Checkers = function (fen) {
           tempMove.takes = moves[i].takes
           tempMove.piecesCaptured = moves[i].piecesTaken
         }
-        // console.log(moves[i]);
         return tempMove
       }
     }
-    console.log(moves, tempMove)
     return false
   }
 
   function makeMove (move) {
-    // var us = turn
-    // var them = swap_color(us)
-    // console.log(turn, us, them)
-    // console.log(us, them, 'mke in mive', move, position.charAt(convertNumber(move.to, 'internal')))
-    console.log(move,position)
     move.piece = position.charAt(convertNumber(move.from, 'internal'))
     position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece)
     position = setCharAt(position, convertNumber(move.from, 'internal'), 0)
     move.flags = FLAGS.NORMAL
-    console.log(position, 'makeMove no capture')
-    console.log(convertNumber(move.to, 'internal'),position.charAt(convertNumber(move.from, 'internal')));
+
     // TODO refactor to either takes or capture
     if (move.takes && move.takes.length) {
       move.flags = FLAGS.CAPTURE
@@ -618,14 +569,11 @@ var Checkers = function (fen) {
       move.piecesCaptured = move.piecesTaken
       for (var i = 0; i < move.takes.length; i++) {
         position = setCharAt(position, convertNumber(move.takes[i], 'internal'), 0)
-      // console.log('setting captures bit at', convertNumber(move.captures[i], 'external'))
       }
     }
-    // console.log(move, us, them, move.piece)
     // Promoting piece here
     if (move.to <= 5 && move.piece === 'w') {
       move.flags = FLAGS.PROMOTION
-      // console.log('piece promoted')
       position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
     } else if (move.to >= 29 && move.piece === 'b') {
       position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
@@ -688,10 +636,7 @@ var Checkers = function (fen) {
   }
 
   function generate_moves (square) {
-    // var us = turn
-    // var them = swap_color(us)
     var moves = []
-    // var captures = []
 
     if (square) {
       moves = getLegalMoves(square.square)
@@ -700,25 +645,20 @@ var Checkers = function (fen) {
       // TODO change to be applicable to array
       if (tempCaptures.length) {
         for (var i = 0; i < tempCaptures.length; i++) {
-          // console.log(tempCaptures);
           tempCaptures[i].flags = FLAGS.CAPTURE
           tempCaptures[i].captures = tempCaptures[i].jumps
           tempCaptures[i].piecesCaptured = tempCaptures[i].piecesTaken
         }
-        // console.log(tempCaptures);
         return tempCaptures
       }
       moves = getMoves()
     }
     // TODO returns [] for on hovering for square no
     moves = [].concat.apply([], moves)
-    // console.log(moves);
     return moves
   }
 
   function getLegalMoves (index) {
-    // var captures = getCaptures(index)
-    // var kingCaptures = getCaptures(index)
     var legalMoves
     index = parseInt(index, 10)
     if (!Number.isNaN(index)) {
@@ -728,27 +668,22 @@ var Checkers = function (fen) {
 
       captures = longestCapture(captures)
       legalMoves = captures
-      // console.log(index, 'captures', captures)
       if (captures.length === 0) {
         legalMoves = movesAtSquare(index)
       }
     }
     // TODO called on hover ??
-    // console.log(legalMoves)
     return convertMoves(legalMoves, 'external')
   }
 
   function getMoves (index) {
-    // return generate_moves(index)
     var moves = []
     var us = turn
-    // var them = swap_color(us)
 
     for (var i = 1; i < position.length; i++) {
       if (position[i] === us || position[i] === us.toLowerCase()) {
         var tempMoves = movesAtSquare(i)
         if (tempMoves.length) {
-          // console.log(tempMoves, convertMoves(tempMoves, 'external'));
           moves = moves.concat(convertMoves(tempMoves, 'external'))
         }
       }
@@ -769,12 +704,10 @@ var Checkers = function (fen) {
     var moves = []
     var posFrom = square
     var piece = position.charAt(posFrom)
-    // console.trace(piece, square, 'movesAtSquare')
     switch (piece) {
       case 'b':
       case 'w':
         var dirStrings = directionStrings(position, posFrom, 2)
-        // console.log(dirStrings)
         for (var dir in dirStrings) {
           var str = dirStrings[dir]
 
@@ -794,11 +727,9 @@ var Checkers = function (fen) {
 
           matchArray = str.match(/^[BW]0/) // e.g. B000, W0
           if (matchArray !== null) {
-            // for (var i = 0; i < matchArray[0].length; i++) {
-              posTo = posFrom + (STEPS[dir])
-              moveObject = {from: posFrom, to: posTo, takes: [], jumps: []}
-              moves.push(moveObject)
-            // }
+            posTo = posFrom + (STEPS[dir])
+            moveObject = {from: posFrom, to: posTo, takes: [], jumps: []}
+            moves.push(moveObject)
           }
         }
         break
@@ -810,9 +741,7 @@ var Checkers = function (fen) {
 
   function getCaptures () {
     var us = turn
-    // var them = swap_color(us)
     var captures = []
-    // var pos = 1
     for (var i = 0; i < position.length; i++) {
       if (position[i] === us || position[i] === us.toLowerCase()) {
         var posFrom = i
@@ -820,11 +749,8 @@ var Checkers = function (fen) {
         var capture = {jumps: [], takes: [], from: posFrom, to: '', piecesTaken: []}
         capture.jumps[0] = posFrom
         var tempCaptures = capturesAtSquare(posFrom, state, capture)
-        // console.log(tempCaptures);
-        // console.log(convertMoves(tempCaptures, 'external'));
         if (tempCaptures.length) {
           captures = captures.concat(convertMoves(tempCaptures, 'external'))
-          // console.log(captures);
         }
       }
     }
@@ -833,9 +759,7 @@ var Checkers = function (fen) {
   }
 
   function capturesAtSquare (posFrom, state, capture) {
-    // console.log(posFrom, state, convertNumber(capture.from, 'external'), 'gettting captures')
     var piece = state.position.charAt(posFrom)
-    // console.log(piece)
     if (piece !== 'b' && piece !== 'w' && piece !== 'B' && piece !== 'W') {
       return [capture]
     }
@@ -845,7 +769,6 @@ var Checkers = function (fen) {
     } else {
       dirString = directionStrings(state.position, posFrom, 3)
     }
-    // console.log(piece, dirString, convertNumber(posFrom, 'external'))
     var finished = true
     var captureArrayForDir = {}
     for (var dir in dirString) {
@@ -869,7 +792,6 @@ var Checkers = function (fen) {
             updateCapture.takes.push(posTake)
             updateCapture.piecesTaken.push(position.charAt(posTake))
             updateCapture.from = posFrom
-            // console.log(updateCapture)
             var updateState = clone(state)
             updateState.dirFrom = oppositeDir(dir)
             var pieceCode = updateState.position.charAt(posFrom)
@@ -919,14 +841,11 @@ var Checkers = function (fen) {
       // fix for mutiple capture
       capture.from = capture.jumps[0]
       captureArray[0] = capture
-      // console.log(posFrom, capture);
     } else {
       for (dir in captureArrayForDir) {
-        // console.log(convertMoves(captureArrayForDir[dir], 'external'));
         captureArray = captureArray.concat(captureArrayForDir[dir])
       }
     }
-    // console.log(convertMoves(captureArray, 'external'));
     return captureArray
   }
 
@@ -936,12 +855,10 @@ var Checkers = function (fen) {
       turn: turn,
       moveNumber: moveNumber
     })
-    // console.log(move);
   }
 
   function undoMove () {
     var old = history.pop()
-    console.log(old)
     if (!old) {
       return null
     }
@@ -950,9 +867,6 @@ var Checkers = function (fen) {
     turn = old.turn
     moveNumber = old.moveNumber
 
-    // var us = turn
-    // var them = swap_color(turn)
-    console.log(position, 'before', move)
     position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece)
     position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
     if (move.flags === 'c') {
@@ -962,18 +876,11 @@ var Checkers = function (fen) {
     } else if (move.flags === 'p') {
       position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase())
     }
-    // console.log(position, 'after')
     return move
   }
 
   function get_disambiguator (move) {
-    // var moves = generate_moves()
 
-    // var from = move.from
-    // var to = move.to
-    // var piece = move.piece
-
-    // var ambiguities = 0
   }
 
   function swap_color (c) {
@@ -992,7 +899,6 @@ var Checkers = function (fen) {
   function longestCapture (captures) {
     var maxJumpCount = 0
     for (var i = 0; i < captures.length; i++) {
-      // console.log(captures[i])
       var jumpCount = captures[i].jumps.length
       if (jumpCount > maxJumpCount) {
         maxJumpCount = jumpCount
@@ -1009,12 +915,10 @@ var Checkers = function (fen) {
         selectedCaptures.push(captures[i])
       }
     }
-// console.log(selectedCaptures);
     return selectedCaptures
   }
 
   function convertMoves (moves, type) {
-    // console.log(moves)
     var tempMoves = []
     if (!type || moves.length === 0) {
       return tempMoves
@@ -1052,7 +956,7 @@ var Checkers = function (fen) {
   }
 
   function convertPosition (position, notation) {
-    var sub1, sub2, sub3, sub4, sub5, newPosition
+    var sub1, sub2, sub3, sub4, newPosition
     switch (notation) {
       case 'internal':
         sub1 = position.substr(1, 8)
@@ -1078,10 +982,8 @@ var Checkers = function (fen) {
     // internal notation only
     var n = parseInt(square, 10)
     if (n >= 0 && n <= 35 && (n % 9) !== 0) {
-      // console.log('inside', n)
       return false
     } else {
-      // console.log('outside', n)
       return true
     }
   }
@@ -1096,7 +998,6 @@ var Checkers = function (fen) {
     if (arguments.length === 2) {
       maxLength = 100
     }
-    // console.log(tempPosition, square, maxLength)
     var dirStrings = {}
     if (outsideBoard(square) === true) {
       return 334
@@ -1110,7 +1011,6 @@ var Checkers = function (fen) {
         dirArray[i] = tempPosition.charAt(index)
         i++
         index = square + i * STEPS[dir]
-        // console.log(index);
         var outside = outsideBoard(index)
       } while (outside === false && i < maxLength)
 
@@ -1167,7 +1067,6 @@ var Checkers = function (fen) {
     for (var i = 0; i < position.length; i++) {
       if (position[i].toLowerCase() === turn.toLowerCase()) {
         // if moves left game not over
-        // console.log('checking if no moves left')
         return generate_moves().length === 0
       }
     }
@@ -1178,17 +1077,14 @@ var Checkers = function (fen) {
     var tempHistory = clone(history)
     var moveHistory = []
     var verbose = (typeof options !== 'undefined' && 'verbose' in options && options.verbose)
-// console.log(history);
     while (tempHistory.length > 0) {
       var move = tempHistory.shift()
-      // console.log(move)
       if (verbose) {
         moveHistory.push(makePretty(move))
       } else {
         moveHistory.push(move.move.from + SIGNS[move.move.flags] + move.move.to)
       }
     }
-
     return moveHistory
   }
 
@@ -1197,7 +1093,6 @@ var Checkers = function (fen) {
   }
 
   function makePretty (uglyMove) {
-    console.log(uglyMove)
     var move = {}
     move.from = uglyMove.move.from
     move.to = uglyMove.move.to
@@ -1223,18 +1118,15 @@ var Checkers = function (fen) {
   function perft (depth) {
     var moves = generate_moves({legal: false})
     var nodes = 0
-    // var color = turn
 
     for (var i = 0; i < moves.length; i++) {
       makeMove(moves[i])
-      // if (!king_attacked(color)) {
       if (depth - 1 > 0) {
         var child_nodes = perft(depth - 1)
         nodes += child_nodes
       } else {
         nodes++
       }
-      // }
       undoMove()
     }
 
@@ -1261,7 +1153,7 @@ var Checkers = function (fen) {
     gameOver: gameOver,
 
     inDraw: function () {
-      return false;
+      return false
     },
 
     validate_fen: validate_fen,
@@ -1290,16 +1182,10 @@ var Checkers = function (fen) {
       }
       move.to = parseInt(move.to, 10)
       move.from = parseInt(move.from, 10)
-      // var moves = getLegalMoves(move.from)
       var moves = generate_moves()
-      console.log(moves);
       for (var i = 0; i < moves.length; i++) {
-        // if (move.to === convertNumber(moves[i].to, 'external')) {
         if ((move.to === moves[i].to) && (move.from === moves[i].from)) {
-          // makeMove(convertMoves(moves[i], 'external'))
-          // console.log('sending mvoe', moves[i], move);
           makeMove(moves[i])
-          // console.log(moves[i]);
           return moves[i]
         }
       }
