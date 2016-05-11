@@ -1,5 +1,5 @@
 {
-  "name": "checkers",
+  "name": "checkers.js",
   "version": "0.0.1",
   "description": "A Javascript Checkers Move validation library",
   "main": "checkers.js",
@@ -14,7 +14,7 @@
     "checkers",
     "draughts"
   ],
-  "author": "shubhendu",
+  "author": "shubhu",
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/shubhendusaurabh/checkers.js/issues"
