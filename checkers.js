@@ -1119,9 +1119,8 @@ var Checkers = function (fen) {
     return str.replace(/^\s+|\s+$/g, '')
   }
 
-  // TODO
   function perft (depth) {
-    var moves = generate_moves({legal: false})
+    var moves = generate_moves()
     var nodes = 0
 
     for (var i = 0; i < moves.length; i++) {
